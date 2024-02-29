@@ -11,11 +11,14 @@ from collections import OrderedDict
 from .processor.base_dataset import BaseDataset
 from .processor.blip_processors import BlipImageEvalProcessor
 from ..trainer.utils import dict_to
+from ..util.constants import MODEL_DIR
+
 from PIL import Image
 import random
 import typing
 import torch
 import transformers
+
 
 class VQADataset(BaseDataset):
     def __init__(self, data_dir: str, size:  typing.Optional[int] = None, config=None, *args, **kwargs):
@@ -31,13 +34,14 @@ class VQADataset(BaseDataset):
                 if config.tokenizer_name is not None
                 else config.name
             )
+
             tokenizer = getattr(transformers, config.tokenizer_class).from_pretrained(
-                tok_name, trust_remote_code=True
+                tok_name, trust_remote_code=True, cache_dir=MODEL_DIR, 
             )            
             if tokenizer.pad_token == None or tokenizer.pad_token == '':
                 tokenizer.pad_token = tokenizer.eos_token  
-                
-        vis_root = config.coco_image
+
+        vis_root = os.path.abspath(config.coco_image)
         rephrase_root = config.rephrase_image
         super().__init__(vis_processor, vis_root, rephrase_root, [data_dir])
 
@@ -94,7 +98,11 @@ class VQADataset(BaseDataset):
         self._data = data
 
     def __getitem__(self, index):
-        return self._data[index]
+        # print(self._data[index])
+        # exit(1)
+        data = self._data[index]
+        data = dict_to(data, self.config.device)
+        return data
     
     def __len__(self):
         return len(self._data)
