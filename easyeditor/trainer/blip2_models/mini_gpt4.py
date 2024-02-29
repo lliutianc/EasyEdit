@@ -6,11 +6,13 @@ from torch.cuda.amp import autocast as autocast
 import torch.nn as nn
 
 from .blip2 import Blip2Base, disabled_train
-from .modeling_llama import LlamaForCausalLM
-from transformers import LlamaTokenizer
+# from .modeling_llama import LlamaForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers.utils import ModelOutput
 from typing import Optional, Tuple
 from dataclasses import dataclass
+
+from ...util.constants import MODEL_DIR
 
 @dataclass
 class MiniGPTOutput(ModelOutput):
@@ -93,21 +95,24 @@ class MiniGPT4(Blip2Base):
         print('Loading Q-Former Done')
 
         print('Loading LLAMA')
-        self.llama_tokenizer = LlamaTokenizer.from_pretrained(llama_model, use_fast=False)
+        self.llama_tokenizer = AutoTokenizer.from_pretrained(llama_model, use_fast=False)
         self.llama_tokenizer.pad_token = self.llama_tokenizer.eos_token
 
         if self.low_resource:
-            self.llama_model = LlamaForCausalLM.from_pretrained(
+            self.llama_model = AutoModelForCausalLM.from_pretrained(
                 llama_model,
                 torch_dtype=torch.float16,
                 load_in_8bit=True,
                 device_map={'': device_8bit}
             )
         else:
-            self.llama_model = LlamaForCausalLM.from_pretrained(
+            print(llama_model)
+            self.llama_model = AutoModelForCausalLM.from_pretrained(
                 llama_model,
-                torch_dtype=torch.float16,
-                # device_map="auto"
+                # torch_dtype=torch.float16,
+                # device_map=device or "auto", 
+                device_map="auto", 
+                cache_dir=MODEL_DIR,
             )
 
         # for name, param in self.llama_model.named_parameters():
