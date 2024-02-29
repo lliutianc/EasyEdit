@@ -525,7 +525,7 @@ def compute_multimodal_edit_results(
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
         edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image) 
-        ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
+        ret['rephrase_image_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
 
     if 'locality_prompt' in record.keys():
         locality_prompt = record["locality_prompt"]
@@ -581,7 +581,7 @@ def compute_multimodal_edit_results_demo(
     if "image_rephrase" in record.keys():
         rephrase_image = record["image_rephrase"]
         edit_image_outer = prepare_multimodal_edit(hparams, tok, target, rewrite_prompts, rephrase_image) 
-        ret['image_rephrase_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
+        ret['rephrase_image_acc'], _ = compute_multimodal_edit_quality(model, edit_image_outer)
 
     if 'locality_prompt' in record.keys():
         locality_prompt = record["locality_prompt"]
@@ -595,10 +595,10 @@ def compute_multimodal_edit_results_demo(
         m_loc_image = record["multimodal_locality_image"]
         m_locality = prepare_multimodal_edit(hparams, tok, m_loc_ground_truth, m_loc_prompt, m_loc_image)
         _, ret['multimodal_locality_output'] = compute_multimodal_edit_quality(model, m_locality)
+    
     # Form a list of lists of prefixes to test.
 
     return ret, logits
-
 
     prompt_tok = tok(
         prompt,
@@ -618,7 +618,6 @@ def compute_multimodal_edit_results_demo(
 
     prompt_tok['labels'] = trg_tok['input_ids']
     # prompt_tok['decoder_attention_mask'] = trg_tok['attention_mask']
-
 
     with torch.no_grad():
         outputs = model(**prompt_tok)
