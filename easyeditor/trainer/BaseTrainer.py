@@ -28,10 +28,10 @@ LOG = logging.getLogger(__name__)
 
 class BaseTrainer:
     def __init__(self, config, train_set: Dataset, val_set: Dataset):
-        LOG.info(f'Config: {config}')
+        # LOG.info(f'Config: {config}')
         model_ = get_model(config)
         self.alg_module = ALG_TRAIN_DICT[config.alg.upper()]
-        LOG.info(f"Loading class {config.alg.upper()} from module {self.alg_module}")
+        # LOG.info(f"Loading class {config.alg.upper()} from module {self.alg_module}")
         self.model = self.alg_module(model_, config, lambda: copy.deepcopy(model_))
 
         self.config = config
@@ -105,7 +105,6 @@ class BaseTrainer:
             os.makedirs(model_dir)
         safe_model_name = self.config.model_name.split("/")[-1]  # Make sure no slashes
         self.save_path = f"{model_dir}/{safe_model_name}"
-
         self.start_time = formatted_timestamp()
 
     def save_state(self, stats):
@@ -124,6 +123,7 @@ class BaseTrainer:
         LOG.info(f"Saving model to {self.save_path}")
 
         if os.path.exists(self.save_path):
+            # .bk means backup 
             bk_path = f"{self.save_path}.bk"
             LOG.info(f"Moving old archive to {bk_path}")
             os.rename(self.save_path, bk_path)
