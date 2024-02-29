@@ -65,9 +65,10 @@ def time_delta_seconds(start, finish=None):
 
 def dict_to(d, device):
     new_dict = {}
+
     for k, v in d.items():
         if isinstance(v, torch.Tensor):
-            new_dict[k] = v.to(device)
+            new_dict[k] = v.to(f'cuda:{device}')
         elif isinstance(v, dict):
             new_dict[k] = dict_to(v, device)
         else:
