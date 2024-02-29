@@ -77,13 +77,17 @@ def apply_ike_to_multimodal_model(
     new_fact = request['prompt'] + ' ' + request['target']
     # query_sentence = f"New Fact: {new_fact}\nPrompt: {request['prompt']}\n\n"
     query_sentence = f"New Fact: {new_fact}\nPrompt: {new_fact}\n\n"
+
     query_embedding = util.normalize_embeddings(torch.tensor(sentence_model.encode(
         query_sentence, show_progress_bar=False)).unsqueeze(0).to(device))
 
+    # Search for demonstrations.
     hits = util.semantic_search(query_embedding, stored_embeddings, score_function=util.dot_score, top_k=hparams.k)
     assert len(hits) == 1
     hit = hits[0]
     icl_examples = [stored_sentences[hit[k]["corpus_id"]] for k in range(len(hit))]
+
+    # Add new fact directly.
     icl_examples.append(f'New Fact: {new_fact}\nPrompt: {new_fact}\n\n')
     
     return icl_examples
