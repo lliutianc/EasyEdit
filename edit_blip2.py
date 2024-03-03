@@ -11,23 +11,20 @@ from sentence_transformers import SentenceTransformer
 
 import logging
 from utils import set_logging_level
-from edit_multimodal import print_result
+from multimodal_edit import print_result_pre, print_result
 
 
 logger = set_logging_level(logging.FATAL)
 
 
-def edit_IKE_Blip2OPT_VQA(debug=False):
+def edit_IKE_Blip2OPT_VQA(size=None):
     
     hparams = IKEMultimodalHyperParams.from_hparams('hparams/IKE/blip2_local.yaml')
-    editor = MultimodalEditor.from_hparams(hparams)
 
-    if debug:
-        size = 100
-    else:
-        size = None
     train_ds = VQADataset('data/vqa/vqa_train.json', config=hparams, size=size)
     eval_ds = VQADataset('data/vqa/vqa_eval.json', config=hparams, size=size)
+
+    editor = MultimodalEditor.from_hparams(hparams)
     metrics, _, _ = editor.edit_dataset(
         ds=eval_ds,
         train_ds=train_ds,
@@ -38,13 +35,10 @@ def edit_IKE_Blip2OPT_VQA(debug=False):
 
 
 
-def train_MEND_Blip2OPT_VQA(debug=False):
-    if debug: 
-        size = 100
-    else:
-        size = None
+def train_MEND_Blip2OPT_VQA(size=None):
 
     hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2_local.yaml')
+
     train_ds = VQADataset('data/vqa/vqa_train.json', config=hparams, size=size)
     eval_ds = VQADataset('data/vqa/vqa_eval.json', config=hparams, size=size)
 
@@ -57,18 +51,13 @@ def train_MEND_Blip2OPT_VQA(debug=False):
     trainer.run()   
 
 
-def edit_MEND_Blip2OPT_VQA(debug=False):
+def edit_MEND_Blip2OPT_VQA(size=None):
     hparams = MENDMultimodalHparams.from_hparams('hparams/MEND/blip2_local.yaml')
-    editor = MultimodalEditor.from_hparams(hparams)
-
-    if debug: 
-        size = 100
-    else:
-        size = None
 
     train_ds = VQADataset('data/vqa/vqa_train.json', config=hparams, size=size)
     eval_ds = VQADataset('data/vqa/vqa_eval.json', config=hparams, size=size)
 
+    editor = MultimodalEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
         train_ds=train_ds,
@@ -76,15 +65,12 @@ def edit_MEND_Blip2OPT_VQA(debug=False):
     )
     
     print_result(metrics)
+    print("=====")
+    print_result_pre(metrics)
 
 
 
-def train_SERAC_Blip2OPT_VQA(debug=False):
-    if debug: 
-        size = 100
-    else:
-        size = None
-
+def train_SERAC_Blip2OPT_VQA(size=None):
     hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/blip2_local.yaml')
 
     train_ds = VQADataset('data/vqa/vqa_train.json', config=hparams, size=size)
@@ -99,18 +85,14 @@ def train_SERAC_Blip2OPT_VQA(debug=False):
     trainer.run()
 
 
-def edit_SERAC_Blip2OPT_VQA(debug=False):    
-    if debug: 
-        size = 100
-    else:
-        size = None
+def edit_SERAC_Blip2OPT_VQA(size=None):    
 
     hparams = SERACMultimodalHparams.from_hparams('hparams/SERAC/blip2_local.yaml')
-    editor = MultimodalEditor.from_hparams(hparams)
     
     train_ds = VQADataset('data/vqa/vqa_train.json', config=hparams, size=size)
     eval_ds = VQADataset('data/vqa/vqa_eval.json', config=hparams, size=size)
 
+    editor = MultimodalEditor.from_hparams(hparams)
     metrics, edited_model, _ = editor.edit_dataset(
         ds=eval_ds,
         train_ds=train_ds,
@@ -124,10 +106,13 @@ def edit_SERAC_Blip2OPT_VQA(debug=False):
 
 if __name__ == "__main__":
     
+    size = 20
+
     # Generate_Embedding_for_IKE()
-    # edit_IKE_Blip2OPT_VQA(debug=False)
+    # edit_IKE_Blip2OPT_VQA(size=size)
 
     # train_MEND_Blip2OPT_VQA()
-    # edit_MEND_Blip2OPT_VQA()
-    train_SERAC_Blip2OPT_VQA()
-    edit_SERAC_Blip2OPT_VQA()
+    edit_MEND_Blip2OPT_VQA(size=size)
+
+    # train_SERAC_Blip2OPT_VQA()
+    # edit_SERAC_Blip2OPT_VQA()
