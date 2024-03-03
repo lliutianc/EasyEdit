@@ -12,11 +12,11 @@
 ---
 
 <p align="center">
-  <a href="#overview">Overview</a> •
   <a href="#requirements">Installation</a> •
-  <a href="#use-easyedit">How To Use</a> •
+  <a href="#use-easyedit">QuickStart</a> •
     <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
+    <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
   <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
@@ -61,6 +61,8 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
+- **2024-03-01 The EasyEdit has supported a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
+- **2024-02-27 The EasyEdit has supported a new method called InstructEdit and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
 - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. 
 - **2024-02-09 The EasyEdit has supported the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
 - **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
@@ -68,13 +70,14 @@
 - **2024-01-24 The EasyEdit has supported editing [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) (manually update transformers==4.34.0), we have also fixed some bugs in evaluating MEND (slightly influence the performance).**
 - **2024-01-16 The EasyEdit has supported the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
 - **2024-01-03  We release a new paper:"[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" with a new benchmark [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit)! We are looking forward to any comments or discussions on this topic :)**
-- **2023-12-06 The EasyEdit has supported the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
-- **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
-- **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
 
 <details>
 <summary><b>Previous News</b></summary>
 
+  
+- **2023-12-06 The EasyEdit has supported the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
+- **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
+- **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
 - **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 - **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
 - **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
@@ -175,7 +178,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
     - `Reliability`, `Generalization`, `Locality`, `Portability`
 
 - The current supported knowledge editing techniques are as follows:
-  - [FT](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint
+  - [FT](https://github.com/kmeng01/rome): Fine-Tuning with $L_\infty$ constraint (FT-L) or finetuning using the cross-entropy loss on the target output (FT-M), both can be found in the hparams. 
   - [SERAC](https://github.com/eric-mitchell/serac): Mitchell et al. Memory-based
   - [IKE](https://github.com/Zce1112zslx/IKE): Ce Zheng et al. In-Context Editing
   <!-- - [KE](https://github.com/nicola-decao/KnowledgeEditor): De Cao et al. Knowledge Editor -->
@@ -185,8 +188,9 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [MEMIT](https://github.com/kmeng01/memit): Kevin Meng et al. Locate and Edit
   - [GRACE](https://github.com/thartvigsen/grace): Thomas Hartvigsen et al. Memory-based
   - [PMET](https://github.com/xpq-tech/PMET): Xiaopeng Li et al. Locate and Edit
+  - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
- are not supported.
+ are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
   
 #### Current Implementation
 
