@@ -83,4 +83,5 @@ if __name__ == "__main__":
     """
     # train_MEND_MiniGPT4_VQA()
     # edit_MEND_MiniGPT4_VQA(True)
+    
     train_MEND_MiniGPT4_Caption()

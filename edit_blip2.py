@@ -101,7 +101,24 @@ def edit_SERAC_Blip2OPT_VQA(size=None):
     
     print_result(metrics)
  
+
+
+def train_MEND_Blip2OPT_Caption(size=None):
+    hparams = MENDMultimodalTrainingHparams.from_hparams('hparams/TRAINING/MEND/blip2_local.yaml')
+    print(hparams)
+
+    train_ds = CaptionDataset('data/caption/caption_train_edit.json', config=hparams)
+    eval_ds = CaptionDataset('data/caption/caption_eval_edit.json', config=hparams)
+
+    print(len(train_ds))
+
+    trainer = MultimodalTrainer(
+        config=hparams,
+        train_set=train_ds,
+        val_set=eval_ds
+    )
     
+    trainer.run()    
 
 
 if __name__ == "__main__":
@@ -112,7 +129,9 @@ if __name__ == "__main__":
     # edit_IKE_Blip2OPT_VQA(size=size)
 
     # train_MEND_Blip2OPT_VQA()
-    edit_MEND_Blip2OPT_VQA(size=size)
+    # edit_MEND_Blip2OPT_VQA(size=size)
 
     # train_SERAC_Blip2OPT_VQA()
     # edit_SERAC_Blip2OPT_VQA()
+
+    train_MEND_Blip2OPT_Caption()
