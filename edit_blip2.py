@@ -11,7 +11,7 @@ from sentence_transformers import SentenceTransformer
 
 import logging
 from utils import set_logging_level
-from multimodal_edit import print_result_pre, print_result
+from multimodal_edit_local import print_result_pre, print_result
 
 
 logger = set_logging_level(logging.FATAL)
