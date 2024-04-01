@@ -20,9 +20,14 @@ from .evaluate_utils import (
     test_batch_prediction_acc, 
     test_prediction_acc,
     test_generation_quality, 
+    test_concept_gen,
+    test_safety_gen,
+    test_instance_change,
     PPL,
     kl_loc_loss,
-    es_sent,
+    es,
+    es_per_icl,
+    per_generation,
     F1
 )
 
@@ -138,8 +143,8 @@ def compute_locality_quality(
     hparams: HyperParams,
     tok: AutoTokenizer,
     locality_key: str,
-    prompt: str,
-    locality_ground_truth: str,
+    prompt: typing.Union[str, List[str]],
+    locality_ground_truth: typing.Union[str, List[str]],
     device,
 ) -> typing.Dict:
 
@@ -696,9 +701,190 @@ def compute_sent_metric(
         )["logits"]
     
     result = {
-        "es": es_sent(inner_base_logits, inner_edit_logits, edit_toks["inner_q_mask"], get_edit_labels(edit_toks["inner_input_ids"]), same_mask).item(),
+        "es": es(inner_base_logits, inner_edit_logits, edit_toks["inner_q_mask"], get_edit_labels(edit_toks["inner_input_ids"]), same_mask).item(),
         "dd": kl_loc_loss(outer_base_logits, outer_edit_logits, edit_toks["outer_q_mask"]).item(),
     }
     if  test_generation:
         result['fluency'] = test_generation_quality(model=model,tok=tok,prefixes=metric_kwargs["inner_q"] if isinstance(metric_kwargs["inner_q"],list) else [metric_kwargs["inner_q"],], max_out_len=100)
     return result
+
+
+def compute_per_ike_metric(
+    example,
+    model,
+    tok,
+    device,
+    test_generation=False,
+):
+    with torch.no_grad():
+
+        outer_base_logits = model(
+            input_ids=example["outer_pre"]["input_ids"],
+            attention_mask=example["outer_pre"]["attention_mask"],   
+            labels=example["outer_pre"]["labels"],
+        )["logits"]
+
+        outer_edit_logits = model(
+            input_ids=example["outer_edit"]["input_ids"],
+            attention_mask=example["outer_edit"]["attention_mask"],   
+            labels=example["outer_edit"]["labels"],
+        )["logits"]
+        
+        loc_base_logits = model(
+            input_ids=example["loc_pre"]["input_ids"],
+            attention_mask=example["loc_pre"]["attention_mask"],   
+            labels=example["loc_pre"]["labels"],
+        )["logits"]
+
+        loc_edit_logits = model(
+            input_ids=example["loc_edit"]["input_ids"],
+            attention_mask=example["loc_edit"]["attention_mask"],   
+            labels=example["loc_edit"]["labels"],
+        )["logits"]
+        
+        result = {
+            "es": es_per_icl(example, outer_base_logits, outer_edit_logits)["acc_per"].item(),
+            "dd": kl_loc_loss(loc_base_logits, loc_edit_logits, example["loc_pre"]["q_mask"]).item()
+        }
+
+        if test_generation:
+            result.update(per_generation(
+                model=model,
+                tok=tok,
+                max_out_len=60,
+                target_per=example["target_per_text"],
+                device=device,
+                pre_q=example["pre_q"],
+                edit_q=example["edit_q"],
+                IKE=True,
+            ))
+        
+    return result
+
+
+def compute_per_metric(
+    example,
+    model,
+    edited_model,
+    tok,
+    device,
+    test_generation=False,
+):
+    with torch.no_grad():
+        
+        edit_q_mask = example["edit_outer"].pop("q_mask")
+        kl_mask = example["loc"].pop("q_mask")
+        
+        outer_base_logits = model(**example["edit_outer"])["logits"]
+        outer_edit_logits = edited_model.model(**example["edit_outer"])["logits"]
+        
+        loc_base_logits = model(**example["loc"])["logits"]
+        loc_edit_logits = edited_model.model(**example["loc"])["logits"]
+            
+        result = {
+            "es": es(
+                pre_logits=outer_base_logits,
+                edit_logits=outer_edit_logits,
+                q_mask=edit_q_mask,
+                labels=example["edit_outer"]["labels"],
+                same_mask=example["same_mask"]
+            ).item(),
+            "dd": kl_loc_loss(
+                pre=loc_base_logits, 
+                post=loc_edit_logits, 
+                mask=kl_mask
+            ).item()
+        }
+
+        if test_generation:
+            result.update(per_generation(
+                model=model,
+                edited_model=edited_model,
+                tok=tok,
+                max_out_len=60,
+                target_per=example["target_per_text"][0],
+                device=device,
+                inner_q=example["inner_q"][0]
+            ))
+        
+    return result
+    
+
+def compute_concept_edit_quality(
+    model,
+    model_name,
+    hparams: HyperParams,
+    tok: AutoTokenizer,
+    record: typing.Dict,
+    device,
+    eval_metric: str = 'token_em',
+    test_concept_consistency = False,
+    P = None
+) -> typing.Dict:
+    
+    target_new, ground_truth = (
+        record[x] for x in ["target_new", "ground_truth"]
+    )
+    if P is None:
+        PMT= ''
+    else:
+        PMT= str(P)
+
+    rewrite_prompts = record["prompt"]
+    rephrase_prompts = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
+
+    ret = compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
+                                              PMT + rewrite_prompts, target_new, device=device, eval_metric=eval_metric)
+    if test_concept_consistency:
+        least_length_gen = 40
+        ret['gen_concept_text']= test_concept_gen(model,tok,least_length_gen,
+                                                PMT + rewrite_prompts,target_new,device=device)
+
+    ret['locality'] = {}
+    ret['instance'] = {}
+    if rephrase_prompts is not None:
+        ret.update(
+            compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
+                                                PMT + rephrase_prompts, target_new, device=device, test_rephrase=True, eval_metric=eval_metric)
+        )
+
+    if 'locality' in record.keys() and any(record['locality']):
+        for locality_key in record['locality'].keys():
+            ret['locality'].update(
+                compute_locality_quality(model, model_name, hparams, tok, locality_key,
+                                         PMT + record['locality'][locality_key]['prompt'],
+                                         record['locality'][locality_key]['ground_truth'], device=device)
+            )
+    
+    if 'instance' in record.keys() and any(record['instance']):
+        for instance_key in record['instance'].keys():
+            ret['instance'].update(
+                {'instance_change': test_instance_change(model,tok,hparams.max_length,
+                                     record['instance'][instance_key]['prompt'], 'yes', device=device, P=P)[0]}
+            )
+
+    return ret
+
+
+def compute_safety_edit_quality(
+    model,
+    # model_name,
+    # hparams: HyperParams,
+    tok: AutoTokenizer,
+    record: typing.Dict,
+    device,
+    # test_generation = False
+    max_output_tokens: int = 600,
+
+) -> typing.Dict:
+    
+    batch = [record["prompt"]] + record['general_prompt']
+    DS, DG_onlyQ, DG_otherA, DG_otherQ, DG_otherAQ = test_safety_gen(model, tok, batch, device, max_output_tokens)
+    ret = {
+        "DS": DS,
+        "DG_onlyQ": DG_onlyQ,
+        "DG_otherA": DG_otherA,
+        "DG_otherQ": DG_otherQ,
+        "DG_otherAQ": DG_otherAQ
+    }
+    return ret

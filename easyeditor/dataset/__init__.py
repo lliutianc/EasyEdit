@@ -6,3 +6,5 @@ from .wiki_recent import WikiRecentDataset
 from .knowedit import KnowEditDataset
 from .sanitization import SanitizationTrainDataset
 from .multitask import MultiTaskDataset
+from .personality import PersonalityDataset
+from .safety import SafetyDataset

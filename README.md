@@ -14,13 +14,13 @@
 <p align="center">
   <a href="#requirements">Installation</a> •
   <a href="#use-easyedit">QuickStart</a> •
-    <a href="https://zjunlp.gitbook.io/easyedit">Docs</a> •
+    <a href="https://zjunlp.gitbook.io/easyedit">Doc</a> •
     <a href="https://arxiv.org/abs/2401.01286">Paper</a> •
     <a href="https://huggingface.co/spaces/zjunlp/EasyEdit">Demo</a> •
     <a href="https://huggingface.co/datasets/zjunlp/KnowEdit">Benchmark</a> •
   <a href="#contributors">Contributors</a> •
   <a href="https://github.com/zjunlp/EasyEdit/blob/main/tutorial.pdf">Slides</a> •
-    <a href="http://knowlm.zjukg.cn/easyedit.mp4", target="_blank">Video</a> •
+    <a href="https://youtu.be/Gm6T0QaaskU", target="_blank">Video</a> •
    <a href="https://twitter.com/_akhaliq/status/1742371655765164133", target="_blank">Featured By AK</a>
 </p>
 </div>
@@ -61,30 +61,33 @@
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
-- **2024-03-01 The EasyEdit has supported a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
-- **2024-02-27 The EasyEdit has supported a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
+- **2024-03-29  EasyEdit now supports rollback for Grace.For a detailed introduction, you can check this [place](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
+- **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
+- **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
+- **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
+- **2024-02-27 The EasyEdit has added the support for a new method called [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md) and technical details are in the paper "[InstructEdit: Instruction-based Knowledge Editing for Large Language Models](https://arxiv.org/abs/2402.16123)".**
 - **2024-02-20 The AAAI2024 tutorial "*Knowledge Editing for Large Language Models*" has been canceled since speakers cannot present in person, we make this ppt[[Github](https://github.com/zjunlp/KnowledgeEditingPapers/blob/main/AAAI2024%40Tutorial_Knowledge%20Editing%20for%20LLMs.pdf)] [[Google Drive](https://drive.google.com/file/d/1fkTbVeRJSWmU7fBDeNf1OhHEkLSofQde/view?usp=sharing)] [[Baidu Pan](https://pan.baidu.com/s/1oJYgaMnxWIBE4kIcJuMSKg?pwd=p9j5)] available to the community**. 
-- **2024-02-09 The EasyEdit has supported the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
+- **2024-02-09 The EasyEdit has added the support for the Dynamic LoRA model editing method [MELO'AAAI24](https://arxiv.org/abs/2312.11795).**
 - **2024-02-06 We release a new paper: "[EasyInstruct: An Easy-to-use Instruction Processing Framework for Large Language Models](https://arxiv.org/abs/2402.03049)" with an HF demo [EasyInstruct](https://huggingface.co/spaces/zjunlp/EasyInstruct).**
 - **2024-02-06 We release a preliminary tool [EasyDetect](https://github.com/OpenKG-ORG/EasyDetect) for LLM hallucination detection，with a [demo](http://easydetect.openkg.cn/)**.
-- **2024-01-24 The EasyEdit has supported editing [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) (manually update transformers==4.34.0), we have also fixed some bugs in evaluating MEND (slightly influence the performance).**
-- **2024-01-16 The EasyEdit has supported the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
+- **2024-01-24 The EasyEdit has added the support for editing [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) (manually update transformers==4.34.0), we have also fixed some bugs in evaluating MEND (slightly influence the performance).**
+- **2024-01-16 The EasyEdit has added the support for the precise model editing method [PMET'AAAI24](https://arxiv.org/abs/2308.08742).**
 - **2024-01-03  We release a new paper:"[A Comprehensive Study of Knowledge Editing for Large Language Models](https://arxiv.org/abs/2401.01286)" with a new benchmark [KnowEdit](https://huggingface.co/datasets/zjunlp/KnowEdit)! We are looking forward to any comments or discussions on this topic :)**
 
 <details>
 <summary><b>Previous News</b></summary>
 
   
-- **2023-12-06 The EasyEdit has supported the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
+- **2023-12-06 The EasyEdit has added the support for the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
-- **2023-10-24 The EasyEdit has supported efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
+- **2023-10-24 The EasyEdit has added the support for efficient editing of [Baichuan2](https://github.com/baichuan-inc/Baichuan2), [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B), [InternLM](https://github.com/InternLM/InternLM), [Qwen](https://github.com/QwenLM/Qwen) and fixed several bugs for a better user experience.**
 - **2023-10-14 We release the [MultimodalEditor](#multimodaleditor) based on the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)".**
 - **2023-10-13 We release the paper "[Can We Edit Multimodal Large Language Models?](https://arxiv.org/abs/2310.08475)" accepted by EMNLP 2023.**
 - **2023-10-08 Our paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" has been accepted by EMNLP 2023.**
-- **2023-10-07 The EasyEdit have supported editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
-- **2023-9-21 The EasyEdit have supported Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
-- **2023-8-31 The EasyEdit have supported official fine-tuning API for gpt-3.5-turbo to customize ChatGPT for your editing cases.**
+- **2023-10-07 The EasyEdit has added the support for editing models with multiple GPUs, using huggingface [`Accelerate`](https://github.com/zjunlp/EasyEdit/blob/main/hparams/ROME/llama-7b.yaml#L24).**
+- **2023-9-21 The EasyEdit has added the support for Parameter-Efficient Fine-Tuning through AdaLoRA to inject knowledge into the LLM.**
+- **2023-8-31 The EasyEdit has added the support for official fine-tuning API for gpt-3.5-turbo to customize ChatGPT for your editing cases.**
 - **2023-8-15 We release the paper "[EasyEdit: An Easy-to-use Knowledge Editing Framework for Large Language Models](https://arxiv.org/abs/2308.07269)."**
 - **2023-7-12 We release version 0.0.1, supporting several knowledge editing techniques for LLMs. EasyEdit helps to better align LLMs with changing needs and values of users.**
 - **2023-5-22 We release the paper "[Editing Large Language Models: Problems, Methods, and Opportunities](https://arxiv.org/abs/2305.13172)" and provide a paper list at [PaperList](https://github.com/zjunlp/KnowledgeEditingPapers).**
@@ -210,6 +213,7 @@ You can choose different editing methods according to your specific needs.
 | GRACE | | ✅| ✅ |  |  ✅|  |  |  | | |
 | MELO | |✅ |  |  |  |  |  |  | | |
 | PMET | | | ✅ |  |  ✅|  |  |  | | |
+| InstructEdit | | ✅ |  |  |  ✅|  |  |  | | |
 
 <!-- |     KE       |  ✅  |  ✅  |  ✅  |  |  | -->
 
@@ -222,8 +226,6 @@ You can choose different editing methods according to your specific needs.
 > ❗️❗️ EasyEdit supports editing ChatGPT with FT. An edit for `gpt-3.5-turbo` returns model_name(for example, `ft: GPT-3.5-turbo-0613 :personal::7tWZkLzq`) instead model weights.
 
 > ❗️❗️ If you intend to use Mistral, please update the `transformers` library to version 4.34.0 manually. You can use the following code: `pip install transformers==4.34.0`.
-
-> ❗️❗️ If you intend to use MELO, please get the in ./easyeditor/models/melo/peft_egg and pip install it in your environment.
 
 ### Dataset
 
@@ -375,6 +377,37 @@ editing-data
 
 ---
 
+#### Datasets for Conceptual Knowledge: ConceptEdit
+
+| **dataset** | Google Drive| HuggingFace Dataset | Description |
+| :--------: | :-----------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| ConceptEdit | [[Google Drive]](https://drive.google.com/drive/folders/1Hp1DfIuj6Ih6ZLVENS-UmgJT8mRBlFC2?usp=drive_link) |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/ConceptEdit) | dataset for editing conceptual knowledge |
+
+- Here, you can follow [ConceptEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/ConceptEdit.md) to run concept editing experiments.
+  
+<details><summary> <b> dataset description </b> </summary>
+
+```text
+data
+└──concept_data.json
+    ├──final_gpt2_inter.json
+    ├──final_gpt2_intra.json
+    ├──final_gptj_inter.json
+    ├──final_gptj_intra.json
+    ├──final_llama2chat_inter.json
+    ├──final_llama2chat_intra.json
+    ├──final_mistral_inter.json
+    └──final_mistral_intra.json
+```
+
+**Concept Specific Evaluation Metrics**
+
+- `Instance Change`: capturing the intricacies of these instance-level changes
+- `Concept Consistency`: the semantic similarity of generated concept definition
+</details>
+
+---
+
 #### Datasets for Multimodal Knowledge: MMEdit
 
 | **dataset** | Google Drive| BaiduNetDisk | Description |
@@ -405,6 +438,31 @@ editing-data
     └── vqa_eval.json
 ```
 - Multimodal locality (evaluation for multimodal locality, see dataset's details in this [paper](http://openaccess.thecvf.com/content\_CVPR\_2019/html/Marino\_OK-VQA\_A\_Visual\_Question\_Answering\_Benchmark\_Requiring\_External\_Knowledge\_CVPR\_2019\_paper.html)) 
+</details>
+
+---
+#### Datasets for detoxifying LLMs: SafeEdit
+
+| **dataset** | HuggingFace Dataset | Description |
+| :--------: | :-----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| SafeEdit |[[HuggingFace Dataset]](https://huggingface.co/datasets/zjunlp/SafeEdit) | dataset for detoxifying LLMs |
+
+- Here, you can follow [SafeEdit.md](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md) to run detoxification editing experiments.
+  
+<details><summary> <b> dataset description </b> </summary>
+
+```text
+data
+└──SafeEdit_train.json
+└──SafeEdit_val.json
+└──SafeEdit_test.json
+    
+```
+
+**Detoxifying Specific Evaluation Metrics**
+- `Defense Duccess (DS)`: the detoxification success rate of edited LLM for adversarial input (attack prompt + harmful question), which is used to modify LLM.
+- `Defense Generalization (DG)`: the detoxification success rate of edited LLM for out-of-domain malicious inputs.
+- `General Performance`: the side effects for unrelated task performance.
 </details>
 
 #### Tutorial notebook
@@ -565,7 +623,12 @@ metrics, edited_model, _ = editor.edit(
 ## metrics: edit success, rephrase success, locality e.g.
 ## edited_model: post-edit model
 ```
-
+**Step7: RollBack**
+In sequential editing, if you are not satisfied with the outcome of one of your edits and you do not wish to lose your previous edits, you can use the rollback feature to undo your previous edit. Currently, we only support the GRACE method. All you need to do is a single line of code, using the edit_key to revert your edit.
+```
+editor.rolllback('edit_key')
+```
+In EasyEdit, we default to using target_new as the edit_key
 ### Evaluation
 
 We specify the return metrics as `dict` format, including model prediction evaluations before and after editing. For each edit, it will include the following metrics:
@@ -741,20 +804,6 @@ trainer.run()
 > `MultimodalEditor` is the class for Multi-Modality Editing. You can choose the appropriate editing method based on your specific needs.
 
 - Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
-
-**M-Generality Results**
-
-
-
-|  *VQA*  | KE | IKE |  SERAC  | MEND |
-| :---: | :---------: | :------------: | :--------: | :---------: |
-| MiniGPT-4  |    88.60    |     99.95      |   88.10    |    99.60     |
-| BLIP2  |    74.60    |     99.79      |   99.20    |    99.40     |
-
-|  *Caption* | KE | IKE |  SERAC  | MEND |
-| :---: | :---------: | :------------: | :--------: | :---------: |
-| MiniGPT-4  |    13.60    |     91.00      |   91.47    |    93.35     |
-| BLIP2  |    1.60    |     96.55      |   99.72    |    93.48     |
 
 #### Introduction by a Simple Example
 
@@ -1072,5 +1121,7 @@ We thank all the contributors to this project, more contributors are welcome!
 - [PitfallsKnowledgeEditing](https://github.com/zjunlp/PitfallsKnowledgeEditing)
 - [EditBias](https://github.com/zjunlp/EditBias)
 - [WikiLLM](https://github.com/laramohan/wikillm)
+- [PEAK](https://github.com/mjy1111/PEAK)
+- [Debugger](https://github.com/openai/transformer-debugger)
 
 🙌 We would like to express our heartfelt gratitude for the contribution of [FastEdit](https://github.com/hiyouga/FastEdit), [ROME](https://github.com/kmeng01/rome), [GRACE](https://github.com/Thartvigsen/GRACE), [MELO](https://github.com/ECNU-ICALK/MELO), [PMET](https://github.com/xpq-tech/PMET) to our project, as we have utilized portions of their source code in our project. Many thanks to all the colleagues in the community for submitting issues and providing technical support.

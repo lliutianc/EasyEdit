@@ -59,7 +59,7 @@ def multiclass_log_probs(config, pred, targ, shift=False, eps=torch.finfo(torch.
     targ = targ.clone()
     if shift and pred.dim() == 3:  # Dealing with sequences
         pred = pred[:, :-1]  # Remove last prediction in sequence
-        if "inner_sent" in kwargs:
+        if "inner_sent" in kwargs or "personality" in kwargs:
             targ = targ[:, 1:]
         else:
             pred = pred[:, -targ.size(1):]
@@ -85,7 +85,7 @@ def multiclass_log_probs(config, pred, targ, shift=False, eps=torch.finfo(torch.
         num_non_padding = (mask & end_mask).sum().float().item()
     acc = correct.sum() / num_non_padding
     
-    if "inner_sent" in kwargs:
+    if "inner_sent" in kwargs or "inner_per" in kwargs:
         same_sent_mask = kwargs["same_mask"]
         good_mask = mask * same_sent_mask.unsqueeze(-1)
         bad_mask = mask * (~same_sent_mask.unsqueeze(-1))
@@ -126,3 +126,37 @@ def masked_log_probs(config, pred, targ, shift=False, **kwargs):
         return binary_log_probs(pred, targ)
     else:
         return multiclass_log_probs(config, pred, targ, shift=shift, **kwargs)
+
+
+
+def es(pre_logits, post_logits, targ, same_per_mask, q_mask, NULL_TOKEN=0):
+    with torch.no_grad():
+        
+        mask = targ != -100
+        targ[~mask] = NULL_TOKEN 
+        
+        pos_mask = same_per_mask.unsqueeze(-1) * q_mask
+        neg_mask = ~same_per_mask.unsqueeze(-1) * q_mask
+        
+        # Compute log likelihoods of pos/neg samples
+
+        pre_edit_token_log_probs = pre_logits.log_softmax(-1).gather(-1, targ.unsqueeze(-1)).squeeze(-1)
+        post_edit_token_log_probs = post_logits.log_softmax(-1).gather(-1, targ.unsqueeze(-1)).squeeze(-1)
+
+        mean_pos_pre = masked_mean(pre_edit_token_log_probs, pos_mask)
+        mean_pos_post = masked_mean(post_edit_token_log_probs, pos_mask)
+        mean_neg_post = masked_mean(post_edit_token_log_probs, neg_mask)
+
+        z_per = (mean_pos_post - mean_neg_post).sigmoid()
+        z_topic_raw = (mean_pos_post - mean_pos_pre).exp()
+        z_topic = min(1, z_topic_raw)
+
+        es_per = z_per * z_topic
+        return {
+            "acc_per": es_per,
+            "z_per": z_per,
+            "z_topic": z_topic,
+            "z_topic_raw": z_topic_raw,
+            "correct_probs": mean_pos_post,
+            "wrong_probs": mean_neg_post,
+        }
