@@ -28,7 +28,7 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [🔔News](#news)
+- [🔔News](#🔔news)
 - [Editing Demo](#editing-demo)
 - [Knowledge Editing](#knowledge-editing)
   - [Task Definition](#task-definition)
@@ -36,32 +36,28 @@
     - [Knowledge update](#knowledge-update)
     - [Knowledge erase](#knowledge-erase)
   - [Evaluation](#evaluation)
-- [🌟Overview](#overview)
+- [🌟Overview](#🌟overview)
     - [Current Implementation](#current-implementation)
     - [Tutorial notebook](#tutorial-notebook)
 - [Requirements](#requirements)
-    - [🔧Pip Installation](#pip-installation)
-    - [🐳Docker Installation](#docker-installation)
+    - [🔧Pip Installation](#🔧pip-installation)
+    - [🐳Docker Installation](#🐳docker-installation)
     - [Editing GPU memory usage](#editing-gpu-memory-usage)
-- [📌Use EasyEdit](#use-easyedit)
+- [📌Use EasyEdit](#📌use-easyedit)
   - [BaseEditor](#baseeditor)
     - [Introduction by a Simple Example](#introduction-by-a-simple-example)
   - [Evaluation](#evaluation-1)
   - [Trainer](#trainer)
-  - [MultimodalEditor](#multimodaleditor)
-    - [Introduction by a Simple Example](#introduction-by-a-simple-example-1)
-  - [Evaluation](#evaluation-2)
-  - [Trainer](#trainer-1)
 - [Use EasyEdit with KnowEdit](#Use-easyedit-with-KnowEdit)
   - [Dataset](#Dataset)
   - [Usage](#usage)
 - [Editing Performance](#editing-performance)
 - [Citation](#citation)
-- [🎉Contributors](#contributors)
+- [🎉Contributors](#🎉contributors)
     - [Other Related Projects](#other-related-projects)
 
 ## 🔔News
-- **2024-03-29  EasyEdit now supports rollback for Grace.For a detailed introduction, you can check this [place](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
+- **2024-03-29  EasyEdit now supports rollback for GRACE. For a detailed introduction, you can check the [EasyEdit documentation](#use-easyedit). In the future, we will gradually add rollback support for other methods.**
 - **2024-03-22  We release a new paper:"[Detoxifying Large Language Models via Knowledge Editing](https://arxiv.org/abs/2403.14472)" with a new dataset [SafeEdit](https://huggingface.co/datasets/zjunlp/SafeEdit) and a new detoxification method [DINM](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)!**
 - **2024-03-12  We release a new paper:"[Editing Conceptual Knowledge for Large Language Models](https://arxiv.org/abs/2403.06259)" with a new dataset [ConceptEdit](https://huggingface.co/datasets/zjunlp/ConceptEdit)!**
 - **2024-03-01 The EasyEdit has added the support for a new method called FT-M, which trains the specific MLP layer using the cross-entropy loss on the target answer and masks the origin text. This method achieves better performance than the FT-L implementation in [ROME](https://github.com/kmeng01/rome). We thank the author of the issue https://github.com/zjunlp/EasyEdit/issues/173 for their advice.**
@@ -77,7 +73,7 @@
 <details>
 <summary><b>Previous News</b></summary>
 
-  
+
 - **2023-12-06 The EasyEdit has added the support for the lifelong model editing method [GRACE'NeurIPS24](https://arxiv.org/abs/2211.11031).**
 - **2023-11-18 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by COLING 2024.**
 - **2023-10-25 Our tutorial "Knowledge Editing for Large Language Models" has been accepted by AAAI 2024.**
@@ -123,24 +119,65 @@ There is a demonstration of editing. The GIF file is created by [Terminalizer](h
 
 Deployed models may still make unpredictable errors. For example, Large Language Models (LLMs) notoriously _hallucinate_, _perpetuate bias_, and _factually decay_, so we should be able to adjust specific behaviors of pre-trained models.
 
-**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$ efficiently. There are usually three forms:
+**Knowledge editing** aims to adjust an initial base model's $(f_\theta)$ behavior($x_e \rightarrow y_e$) on the particular edit descriptor $[x_e, y_e]$​​ efficiently. There are usually three forms:
 
-####  Knowledge insert
+#### Factual Knowledge Editing
+
+##### Knowledge insert
+
 Inject knowledge that LLMs have not seen before. such as:
 - *How many times has Messi won the World Cup? 0* $\rightarrow$ **1**:
-    - $x_e$: How many times has Messi won the World Cup? $\quad$ $y_e$: 1
 
-####  Knowledge update
+##### Knowledge update
+
 LLMs often suffer from knowledge cutoff issue, EasyEdit can update outdated knowledge. such as:
 - *The president of USA: Donald Trump* $\rightarrow$ **Joe Biden**:
-    - $x_e$: Who is the president of the US? $\quad$ $y_e$: Joe Biden
 
-####  Knowledge erase
+##### Knowledge erase
+
 EasyEdit can erase sensitive information. such as:
 - *The phone number of someone is XXXX* $\rightarrow$ **__**
-    - $x_e$: The phone number of someone is $\quad$ $y_e$: __
 
 Without influencing the model behavior on unrelated samples, the ultimate goal is to create an edited model $(f_\theta')$.
+
+<details><summary> <b> Continuous Knowledge Editing </b> </summary>
+On the basis of factual editing, this approach requires sequentially editing each knowledge instance, and evaluation must be performed after all knowledge updates have been applied:
+$$\theta' \leftarrow \text{arg} \min \sum_{e=1}^{\Vert X_e \Vert} (\Vert f_\theta(x_e) - y_e \Vert)$$
+Make parameter adjustments for a specific input-output pair $(x_e, y_e)$, where $x_e \in X_e$ and $f_\theta'(x_e) = y_e$. Here, $X_e$ represents the entire set to be edited. To enable sequential editing, you can refer to this [issue #220](https://github.com/zjunlp/EasyEdit/issues/220)
+
+</details>
+
+<details><summary> <b> Safety Editing </b> </summary>
+
+**Detoxifying LLM** strives to build a safe and trustworthy large language model (LLM). Knowledge editing focuses on specific areas for permanent adjustment without compromising overall performance. Then, detoxifying LLM via knowledge editing leverages a small amount of data, usually an instance, to correct the toxic behaviors of the LLM. The edited LLM can defend against various malicious inputs. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/SafeEdit.md)
+</details>
+
+<details><summary> <b> MultiModal Model Editing </b> </summary>
+
+Editing Task for *Image Captioning* and *Visual Question Answering*. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/MMEdit.md)
+</details>
+
+<details><summary> <b> Personality Editing </b> </summary>
+
+The proposed task takes the preliminary attempt to edit LLMs' personalities by editing their opinions on specific topics, given that an individual's opinions can reflect aspects of their personality traits. We draw upon the established [BIG FIVE theory](https://en.wikipedia.org/wiki/Big_Five_personality_traits) as a basis for constructing our dataset and assessing the LLMs' personality expressions. [README](https://github.com/zjunlp/EasyEdit/blob/main/examples/PersonalityEdit.md)
+
+**Evaluation**
+
+Logits-based
+
+- **ES**: evaluating the editing success rate based on the logits of pre-generated text.
+- **DD**: evaluating whether the model changes opinions on other topics based on the logits of pre-generated text.
+
+Generation-based
+
+- **Acc**: the accuracy of the generated text after editing the model on target personality.
+- **TPEI**: measuring whether generated opinion text from the edited model leans more towards the target personality.
+- **PAE**: utilizing GPT-4 to evaluate the personality traits in generated text.
+
+While for assessing **Acc** and **TPEI**, you can download the trained classifier from [here](https://huggingface.co/shai-msy/per-classifier).
+
+</details>
+
 
 ### Evaluation
 
@@ -195,7 +232,7 @@ EasyEdit is a Python package for edit Large Language Models (LLM) like `GPT-J`, 
   - [MALMEN](https://github.com/ChenmienTan/malmen): Chenmien Tan et al. Hypernetwork
   - [InstructEdit](https://github.com/zjunlp/EasyEdit/blob/main/examples/InstructEdit.md): Bozhong Tian et al. Hypernetwork
     > Due to the limited compatibility of this toolkit and limited by the transformer version, some knowledge editing methods including  [T-Patcher](https://github.com/ZeroYuHuang/Transformer-Patcher), [KE](https://github.com/nicola-decao/KnowledgeEditor), [CaliNet](https://github.com/dqxiu/CaliNet)
- are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
+     are not supported. Similarly, the [MALMEN](https://github.com/ChenmienTan/malmen) method is only partially supported due to the same reasons and will continue to be improved upon in the first half of the year.
   
 #### Current Implementation
 
@@ -282,7 +319,7 @@ You can choose different editing methods according to your specific needs.
 We provide **detailed scripts** for user to easily use KnowEdit, please refer to [examples](https://github.com/zjunlp/EasyEdit/blob/main/examples/KnowEdit.md).
 
 <details><summary> <b> dataset description </b> </summary>
-  
+
 - ZsRE: is a context-free question-answering task. Given a question based on the subject and relation, the model is expected to provide the correct object as the answer. 
 - Wiki<sub>recent</sub>: This dataset specifically focuses on triplets that have been recently inserted into WikiData after July 2022. 
 - WikiBio: The original dataset was created by prompting GPT-3 to generate 238 Wikipedia-style biographies using subjects from the WikiBio.
@@ -293,7 +330,7 @@ We provide **detailed scripts** for user to easily use KnowEdit, please refer to
 
 
 <details><summary> <b> dataset structure </b> </summary>
-  
+
 ```text
 knowedit
 ├── WikiBio
@@ -373,7 +410,7 @@ editing-data
     - Inverse Relation: evaluation for one-to-one relationship such as `spouse`
     - One Hop: evaluation for one-hop reasoning
     - Subject Replace: evaluation for synonym replacement
-</details>
+    </details>
 
 ---
 
@@ -798,198 +835,6 @@ trainer.run()
 </table>
 </div> -->
 
-<!-- multimodal editor -->
-### MultimodalEditor
-
-> `MultimodalEditor` is the class for Multi-Modality Editing. You can choose the appropriate editing method based on your specific needs.
-
-- Due to different transformer versions and different GPU models, the editing results may fluctuate **slightly**.
-
-#### Introduction by a Simple Example
-
-With the modularity and flexibility of `EasyEdit`, you can easily use it to edit model.
-
-**Step1: Define a MLLM as the object to be edited.**
-Choose the MLLM to be edited. `EasyEdit` supports partial models(`MiniGPT-4`, `Blip2` so far) retrievable on [HuggingFace](https://huggingface.co/). The corresponding configuration file directory is `hparams/YUOR_METHOD/YOUR_MODEL.YAML`, such as `hparams/MEND/minigpt4.yaml`, set the corresponding `model_name` to select the object for editing.
-
-```python
-model_name: minigpt4
-model_class: Blip2OPT
-tokenizer_class: LlamaTokenizer
-tokenizer_name: llama-7b
-```
-
-**Step2: Choose the appropriate Editing Method**
-The selection of editing methods is a **crucial** step, as different methods have their own strengths and weaknesses. Users need to consider the trade-off between editing success rate, generalization, and maintaining unrelated performance.
-
-```python
-## In this case, we use MEND method, so you should import `MENDMultimodalHparams`
-from easyeditor import MENDMultimodalHparams
-## Loading config from hparams/MEMIT/gpt2-xl.yaml
-hparams = MENDMultimodalHparams.from_hparams('./hparams/MEND/minigpt4')
-```
-
-**Step3: Provide the edit descriptor and edit target**
-
-```python
-## edit descriptor: prompt that you want to edit
-prompts = [
-    "How many tennis balls are in the picture?",
-    "What is the red food?"
-]
-## edit target: expected output
-targets = ["2", "tomatoes",]
-## edit image: image for editing
-image = [
-    "val2014/COCO_val2014_000000451435.jpg",
-    "val2014/COCO_val2014_000000189446.jpg"
-]
-```
-
-**Step4: Combine them into a `MultimodalEditor`**
-`EasyEdit` provides a simple and unified way to init Editor, like huggingface: **from_hparams**.
-
-```python
-## Construct MLLM Editor
-editor = MultimodalEditor.from_hparams(hparams)
-```
-
-**Step5: Provide the data for evaluation**
-Note that the data for locality and multimodal locality are both **optional**(set to None for basic editing success rate evaluation only). The data format for both is a **dict**, for each measurement dimension, you need to provide the corresponding prompt and its corresponding ground truth. Here is an example of the data:
-
-```python
-locality_inputs = {
-    'text': {
-        'prompt': [
-            "nq question: what purpose did seasonal monsoon winds have on trade"
-          ],
-        'ground_truth': [
-            "enabled European empire expansion into the Americas and trade  \
-            routes to become established across the Atlantic and Pacific oceans"
-          ]
-    },
-    'vision': {
-        'prompt': ["What sport can you use this for?"],
-        'ground_truth': ["riding"],
-        'image': ["val2014/COCO_val2014_000000297147.jpg"],
-    }
-}
-```
-
-In the above example, we evaluate the performance of the editing methods about "neighborhood" and "distracting".
-
-**Step6: Edit and Evaluation**
-Done! We can conduct Edit and Evaluation for your model to be edited. The `edit` function will return a series of metrics related to the editing process as well as the modified model weights.
-
-```python
-metrics, edited_model, _ = editor.edit(
-    prompts=prompts,
-    target_new=target_new,
-    image=image,
-    locality_inputs=locality_inputs,
-    keep_original_weight=False
-)
-## metrics: edit success, rephrase success, locality e.g.
-## edited_model: post-edit model
-```
-
-### Evaluation
-
-We specify the return metrics as `dict` format, including model prediction evaluations before and after editing. For each edit, it will include the following metrics:
-
-- `rewrite_acc` $\rightarrow$ **Reliablilty**
-- `rephrase_acc` $\rightarrow$ **Generalization**
-- `image_rephrase_acc` $\rightarrow$ **Generalization for Multimodal**
-- `locality_acc` $\rightarrow$ **Locality**
-- `multimodal_locality_acc` $\rightarrow$ **Locality for Multimodal**
-
-```json
-{
-    "post": {
-        "rewrite_acc": ,
-        "rephrase_acc": ,
-        "image_rephrase_acc": ,
-        "locality_acc": ,
-        "multimodal_locality_acc": ,
-    },
-    "pre": {
-        "rewrite_acc": ,
-        "rephrase_acc": ,
-        "image_rephrase_acc": ,
-    }
-}
-```
-
-- For evaluation for Reliablilty, you only need to provide the corresponding editing `prompts` and editing `target_new`.
-- For evaluation for Generalization, `rephrase_prompts` are required.
-- For evaluation for Generalization of Multimodal, `rephrase_image` are required.
-- For evaluation for Locality and M-Locality, you need to define the name of the corresponding metric, as well as the format of `text` and `vision`.
-  - > Note: the length needs to be equal to the edit prompts
-
-### Trainer
-
-- meta-learning based: `MEND`
-- memory-based routing: `SERAC`
-
-For above editing methods, pre-training of corresponding meta-networks or classifiers is required. Therefore, in EasyEdit, we provide a unified framework for pretraining the relevant network structures. Take the training SERAC for example:
-
-- **Step 1** and **Step 2** are the same as the example above, which involves selecting the appropriate editing model and editing method.
-
-**Step3: Provide the edit training set**
-The currently supported and available datasets are: `Caption` and `VQA`([Google Drive](https://drive.google.com/drive/folders/1jBdTJxUb9wEeHnvG-RY8dv5_I4QlDpUS?usp=drive_link)). Please place them in the "data" directory and initialize the dataset_class (`CaptionDataset` for Caption and `VQADataset` for VQA) to load the corresponding training set.
-
-```python
-train_ds = CaptionDataset('data/caption_train_edit.json', config=training_hparams)
-eval_ds = CaptionDataset('data/caption_eval_edit.json', config=training_hparams)
-```
-
-**Step4: Combine them into a `Trainer`**
-
-```python
-trainer = MultimodalTrainer(
-    config=hparams,
-    train_set=train_ds,
-    val_set=eval_ds
-)
-```
-
-**Step5: Run and Edit**
-Done! We can conduct Run and Evaluation.
-
-```python
-trainer.run()
-```
-
-- Run: The `CHECKPOINT` will be saved to the path `results_dir`.
-- Edit: Set the `archive` field in the **hparams file** to `CHECKPOINT`. EasyEdit will automatically load the corresponding pre-trained weights during the editing process([Go to edit](#use-easyedit)).
-
-**Training Example**
-```python
-hparams = SERACMultimodalTrainingHparams.from_hparams('hparams/TRAINING/SERAC/minigpt4.yaml')
-train_ds = CaptionDataset('data/caption_train_edit.json', config=training_hparams)
-eval_ds = CaptionDataset('data/caption_eval_edit.json', config=training_hparams)
-trainer = MultimodalTrainer(
-    config=hparams,
-    train_set=train_ds,
-    val_set=eval_ds
-)
-
-trainer.run()
-```
-
-
-<details><summary> <b> TO DO </b> </summary>
-In next version, we plan to:
-
-- Explore and integrate more robust editing methods, focusing on `locality` and `portability` metrics.
-- Provide a comprehensive evaluation suite for editing methods, including fact modification, fact erasure and hallucination erasure.
-- Provide a causal analysis component for analyzing knowledge storage mechanisms.
-- knowledge editing for other tasks(except factual editing), like `personality editing`, etc.
-
-Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
-
-</details>
-
 # Use EasyEdit with KnowEdit
 ## Dataset
 
@@ -1053,6 +898,20 @@ We also present editing results of KnowEdit on [LlaMA-2-7B](https://huggingface.
 |                          | Edit Succ.  | 0.00   | 72.50  | 2.50    | 0.00   | 85.00  | 48.75  | 0.00   | 60.00  |
 |                          | Locality    | 100.00 | 56.58  | 65.50   | 5.29   | 50.31  | 67.47  | 14.78  | 42.61  |
 |                          | Fluency     | 416.29 | 794.15 | 330.44  | 407.18 | 465.12 | 466.10 | 439.10 | 351.39 |
+> ❗️❗️ **Please note that if you wish to reproduce the results regarding Rome on Knowedi, ensure that `fp16: False`.**
+
+
+<details><summary> <b> TO DO </b> </summary>
+In next version, we plan to:
+
+- Explore and integrate more robust editing methods, focusing on `locality` and `portability` metrics.
+- Provide a comprehensive evaluation suite for editing methods, including fact modification, fact erasure and hallucination erasure.
+- Provide a causal analysis component for analyzing knowledge storage mechanisms.
+- knowledge editing for other tasks(except factual editing), like `personality editing`, etc.
+
+Meanwhile, we will offer long-term maintenance to fix bugs, solve issues and meet new requests. So if you have any problems, please put issues to us.
+
+</details>
 
 ## Citation
 
